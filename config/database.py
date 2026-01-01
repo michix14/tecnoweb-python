@@ -116,6 +116,7 @@ class Database:
             # Si es un SELECT que retorna un registro
             if fetch_one: 
                 result = cursor.fetchone()
+                conn.commit()
                 if result:
                     # Convertir a dict
                     columns = [desc[0] for desc in cursor.description]
@@ -125,6 +126,7 @@ class Database:
             # Si es un SELECT que retorna múltiples registros
             elif fetch_all:
                 results = cursor.fetchall()
+                conn.commit()
                 if results:
                     # Convertir a lista de dicts
                     columns = [desc[0] for desc in cursor.description]

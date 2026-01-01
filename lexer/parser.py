@@ -3,7 +3,7 @@ Parser de comandos del sistema de taller mecánico
 """
 from typing import List, Optional, Any
 from dataclasses import dataclass, field
-from . token import Token, TokenType
+from .  token import Token, TokenType
 from . lexer import tokenize
 
 
@@ -12,7 +12,7 @@ class Command:
     """Representa un comando parseado"""
     entity: str
     action: str
-    params: List[Any] = field(default_factory=list)
+    params:  List[Any] = field(default_factory=list)
     subtype: Optional[str] = None
     
     def __repr__(self):
@@ -24,8 +24,8 @@ class Parser:
     
     # Entidades válidas
     ENTITIES = [
-        TokenType.USUARIO, TokenType.VEHICULO, TokenType.SERVICIO,
-        TokenType. CITA, TokenType.DIAGNOSTICO, TokenType.ORDEN, TokenType.PAGO
+        TokenType.  USUARIO, TokenType.VEHICULO, TokenType.SERVICIO,
+        TokenType.CITA, TokenType.DIAGNOSTICO, TokenType.ORDEN, TokenType.PAGO
     ]
     
     # Subtipos de usuario
@@ -36,8 +36,13 @@ class Parser:
     
     # Acciones válidas
     ACTIONS = [
-        TokenType.MOSTRAR, TokenType.AGREGAR, TokenType.MODIFICAR,
+        TokenType.  MOSTRAR, TokenType.AGREGAR, TokenType.MODIFICAR,
         TokenType. ELIMINAR, TokenType.VER, TokenType.REPORTE
+    ]
+    
+    # Comandos especiales (standalone)
+    SPECIAL_COMMANDS = [
+        TokenType.AYUDA, TokenType.SALIR, TokenType.LIMPIAR
     ]
     
     def __init__(self, tokens: List[Token]):
@@ -47,16 +52,25 @@ class Parser:
     
     def advance(self):
         """Avanza al siguiente token"""
-        self. pos += 1
-        if self.pos < len(self.tokens):
-            self.current_token = self.tokens[self.pos]
+        self.pos += 1
+        if self.pos < len(self. tokens):
+            self.current_token = self.tokens[self. pos]
         else:
             self.current_token = None
     
     def parse(self) -> Optional[Command]:
         """Parsea los tokens en un comando"""
         try:
-            if not self.tokens or len(self.tokens) < 2:
+            if not self.tokens:
+                return None
+            
+            # Verificar si es un comando especial (ayuda, salir, limpiar)
+            if self.current_token.type in self.SPECIAL_COMMANDS:
+                action = self.current_token.  value
+                return Command(entity='system', action=action, params=[])
+            
+            # Necesita al menos 2 tokens (entidad + acción)
+            if len(self.tokens) < 2:
                 return None
             
             entity = None
@@ -65,9 +79,9 @@ class Parser:
             params = []
             
             # Verificar primer token
-            if self.current_token.type in self.SUBTYPES:
+            if self.current_token.type in self. SUBTYPES:
                 # Es un subtipo de usuario (cliente, mecanico, etc)
-                subtype = self.current_token.value
+                subtype = self.current_token. value
                 entity = 'usuario'
                 self.advance()
                 
@@ -77,15 +91,19 @@ class Parser:
                     self.advance()
                 
                 # Agregar subtipo como primer parámetro
-                params.append(subtype)
+                params. append(subtype)
                 
-            elif self.current_token.type in self.ENTITIES:
+            elif self.current_token.  type in self.ENTITIES: 
                 # Es una entidad normal
                 entity = self.current_token.value
                 self.advance()
                 
-                # Siguiente debe ser acción
-                if self.current_token and self.current_token.type in self. ACTIONS:
+                # Verificar si el siguiente es comando especial (ej: "usuario ayuda")
+                if self. current_token and self.current_token.type in self.SPECIAL_COMMANDS:
+                    action = self.current_token.  value
+                    self.advance()
+                # O si es una acción normal
+                elif self.current_token and self.current_token.type in self.ACTIONS:
                     action = self.current_token.value
                     self.advance()
             else:
@@ -98,7 +116,7 @@ class Parser:
                     in_bracket = True
                 elif self.current_token.type == TokenType.RBRACKET: 
                     in_bracket = False
-                elif self.current_token.type == TokenType.SEMICOLON: 
+                elif self.current_token. type == TokenType.SEMICOLON:
                     pass  # Ignorar punto y coma
                 elif in_bracket:
                     # Agregar valor del token como parámetro
@@ -115,10 +133,12 @@ class Parser:
             
         except Exception as e:
             print(f"❌ Error en parser: {e}")
+            import traceback
+            traceback.print_exc()
             return None
 
 
-def parse_command(text: str) -> Optional[Command]:
+def parse_command(text: str) -> Optional[Command]: 
     """
     Parsea un comando de texto
     
@@ -126,7 +146,7 @@ def parse_command(text: str) -> Optional[Command]:
         text (str): Texto del comando
     
     Returns:
-        Command:  Comando parseado o None si hay error
+        Command: Comando parseado o None si hay error
     """
     try:
         tokens = tokenize(text)

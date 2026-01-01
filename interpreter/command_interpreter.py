@@ -166,8 +166,8 @@ class CommandInterpreter(BaseInterpreter):
             return self.format_error("Errores de validación:   " + ", ".join(validation_errors))
         
         # Agregar tipo si es usuario
-        if entity_key == 'usuario': 
-            data['tipo'] = command. entity
+        if entity_key == 'usuario' and command.entity != 'usuario':
+            data['tipo'] = command.entity
         
         # Generar código si es necesario
         model = self._get_model(command.entity)
